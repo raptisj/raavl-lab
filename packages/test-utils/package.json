@@ -1,0 +1,6 @@
+{
+  "name": "@lab/test-utils",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0"
+}

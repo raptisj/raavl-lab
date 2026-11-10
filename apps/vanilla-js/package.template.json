@@ -1,0 +1,16 @@
+{
+  "name": "@lab/vanilla-js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --host 127.0.0.1 --strictPort",
+    "start": "vite preview --host 127.0.0.1 --strictPort",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.3.7"
+  }
+}

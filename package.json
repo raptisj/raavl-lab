@@ -1,0 +1,33 @@
+{
+  "name": "raavl-lab",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.5.0",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "lab:use": "node scripts/raavl.mjs use",
+    "lab:status": "node scripts/raavl.mjs status",
+    "lab:dev": "node scripts/raavl.mjs dev",
+    "lab:build": "node scripts/raavl.mjs build",
+    "lab:typecheck": "node scripts/raavl.mjs typecheck",
+    "lab:test": "node scripts/raavl.mjs test",
+    "lab:check": "node scripts/raavl.mjs check",
+    "test:matrix": "node scripts/raavl.mjs test --matrix",
+    "test:package": "node scripts/raavl.mjs package",
+    "browsers:install": "playwright install chromium firefox webkit",
+    "fixtures:serve": "node scripts/fixture-server.mjs",
+    "test:dev": "node scripts/raavl.mjs devtest react",
+    "test:compat": "node tests/compatibility/react-browser.mjs",
+    "test:sources": "node tests/packaging/source-selection.mjs",
+    "format": "prettier --write apps scripts tests packages playwright.config.ts coverage.json",
+    "test:performance": "node tests/performance/run.mjs",
+    "test:bootstrap": "node tests/packaging/bootstrap.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "prettier": "3.6.2",
+    "typescript": "7.0.2"
+  }
+}
