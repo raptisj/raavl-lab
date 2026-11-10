@@ -1,6 +1,6 @@
-# Raavl local integration lab
+# Raavl integration lab
 
-Six independent consumers of the **installed public Raavl package**. This is a local workspace, with no hosting, deployment, CI, remote repository, source aliases, vendored internals, or global links. The sibling library remains unchanged.
+Independent consumer examples for the **installed public Raavl package**. This is a local workspace, with no hosting, deployment, CI, remote repository, source aliases, vendored internals, or global links. The sibling library remains unchanged.
 
 ## Start
 
