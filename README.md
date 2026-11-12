@@ -26,12 +26,14 @@ pnpm lab:dev vanilla-js
 | --- | --- | --- |
 | Vanilla JavaScript | 4301 | `apps/vanilla-js/src/main.js`: editor, headless, data, sources, failures, ownership, controlled, scale |
 | Vanilla TypeScript | 4302 | `apps/vanilla-ts/src/main.ts`: independent typed implementation against shipped declarations |
-| React 19 | 4303 | `apps/react/src/main.tsx`: complete, composed, headless, owned, borrowed, multiple, independent, modules, controlled, many |
+| React 19 | 4303 | `apps/react/src/main.tsx`: complete, composed, headless, owned, borrowed, multiple, independent, modules, controlled, themes, many |
 | Redux Toolkit | 4304 | `apps/react-redux/src/`: serializable state, compare-and-set revisions, persistence, accepted history |
 | Zustand | 4305 | `apps/react-zustand/src/`: equivalent store integration with explicit lifecycle owners |
 | Next App Router | 4306 | `apps/next-app-router/app/`: server shell, route-local player, persistent layout player, `/away` navigation |
 
 Select scenarios with the app links or `?scenario=headless`. The vanilla pages expose explicit API actions; the scenarios change ownership/preparation rather than substituting placeholder screens. Open a second terminal with `pnpm fixtures:serve` for the vanilla network/decode/CORS/slow-source actions (port **4390**). Normal local audio does not need this server.
+
+Run `pnpm lab:dev react` and open the [React theme preview](http://127.0.0.1:4303/?scenario=themes). The player uses the installed `AudioPlayer` and `raavl/styles.css`. Click a region badge to edit it, click the overlap chip to open the picker, or drag an empty range to create a region. Use **Editor layout** to compare inline and modal editing. **Show extra playback controls** enables Raavl's additional transport row through its `controls` prop. **Default**, **Paper**, and **Neon** let you compare the installed package's styling. The presets apply to the waveform and its descendants, so the badge row, picker, editor, and playback controls retain their stock colors. Try switching presets with an inline edit open to compare the same draft.
 
 ## Source selection and reproduction
 
@@ -49,7 +51,7 @@ The root workspace contains only tooling and private fixture/test packages. Auth
 
 Exports, their files, CSS/JSON and optional peers are inspected before installation. A run retains its lockfile; repeat installs use it frozen. Selection changes atomically only after successful installation. Failures retain the active selection and are recorded in `.lab/last-failure.json`. `lab:status` displays active identity and the most recent failure, even if historical. Selection history is retained in `.lab/selections/`. Every app displays version, source mode and hash; full provenance includes local commit/dirty state and lab revision when available.
 
-The CLI synchronizes authored app sources before commands, and watches the chosen app during `lab:dev`; edit `apps/`, never generated runs. Manifest changes require `lab:use` again. Shared audio is generated and copied into every app's `public/fixtures`, so production Next and Vite use the same deterministic stereo WAV. Fixture edits require restarting `lab:dev`. Library artifacts are snapshots: rerun `lab:use local` to pick up a library change. Restore a prior run to switch package/lockfile; retain the corresponding authored source revision to reproduce an older lab implementation.
+The CLI synchronizes authored app sources before commands, and watches the chosen app during `lab:dev`; edit `apps/`, never generated runs. Manifest changes require `lab:use` again. The shared `packages/fixtures/bach_classical.mp3` is copied into every app's `public/fixtures`. Supplied peaks come from the same recording and can be regenerated with `node scripts/generate-bach-peaks.mjs` using Playwright Chromium. Fixture edits require restarting `lab:dev`. Library artifacts are snapshots: rerun `lab:use local` to pick up a library change. Restore a prior run to switch package/lockfile; retain the corresponding authored source revision to reproduce an older lab implementation.
 
 ## Checks
 

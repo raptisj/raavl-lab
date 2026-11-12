@@ -16,7 +16,7 @@ import {
 import { createSnapper } from "raavl/snapping";
 import { waveformThemes, parseTheme } from "raavl/themes";
 import catalog from "raavl/themes.json";
-import { peaks, source, annotations } from "./fixture";
+import { peaks, source, annotations } from "../../../packages/fixtures/data.js";
 if (new URLSearchParams(location.search).get("scenario") !== "headless")
   void import("raavl/styles.css");
 import "./lab.css";
@@ -47,7 +47,7 @@ const button = (label: string, fn: () => unknown) => {
   el("buttons").append(b);
 };
 const player = createPlayer();
-let accepted = annotations,
+let accepted: import("raavl/regions").AnnotationDocument = annotations,
   revision = 0,
   rejected = 0;
 const commitControlled = (
@@ -127,8 +127,14 @@ const data =
         ...peaks,
         duration: 7200,
         channels: peaks.channels.map((c) => ({
-          min: Array.from({ length: 720000 }, (_, i) => c.min[i % 600]),
-          max: Array.from({ length: 720000 }, (_, i) => c.max[i % 600]),
+          min: Array.from(
+            { length: 720000 },
+            (_, i) => c.min[i % c.min.length],
+          ),
+          max: Array.from(
+            { length: 720000 },
+            (_, i) => c.max[i % c.max.length],
+          ),
         })),
       }
     : peaks;
@@ -244,18 +250,21 @@ button("Export JSON", () => {
 });
 button("Import JSON", () =>
   store.replaceDocument(
-    parseAnnotations(document.querySelector("textarea")!.value, "tone"),
+    parseAnnotations(document.querySelector("textarea")!.value, source.id),
   ),
 );
 button("Save", () =>
   localStorage.setItem(
-    "vanilla:tone",
+    `vanilla:${source.id}`,
     stringifyAnnotations(store.getSnapshot().document),
   ),
 );
 button("Reload saved", () =>
   store.replaceDocument(
-    parseAnnotations(localStorage.getItem("vanilla:tone") || "", "tone"),
+    parseAnnotations(
+      localStorage.getItem(`vanilla:${source.id}`) || "",
+      source.id,
+    ),
   ),
 );
 button("Zoom", () => view?.update({ viewport: { zoom: 120 } }));
@@ -287,8 +296,8 @@ button("Supplied peaks", () => player.setSource(source));
 button("Blob", async () =>
   player.setSource({
     kind: "file",
-    id: "tone",
-    file: await (await fetch("/fixtures/tone.wav")).blob(),
+    id: source.id,
+    file: await (await fetch(source.url)).blob(),
     waveform: { kind: "peaks", data: peaks },
   }),
 );
@@ -296,12 +305,12 @@ let media: HTMLAudioElement;
 button("Borrow media", () => {
   media?.pause();
   media?.remove();
-  media = new Audio("/fixtures/tone.wav");
+  media = new Audio(source.url);
   media.controls = true;
   root.append(media);
   return player.setSource({
     kind: "media",
-    id: "tone",
+    id: source.id,
     element: media,
     waveform: { kind: "none" },
   });
@@ -314,7 +323,7 @@ el("file").onchange = (e) => {
 button("Waveform network failure", () =>
   player.setSource({
     ...source,
-    url: "http://127.0.0.1:4390/audio.wav",
+    url: "http://127.0.0.1:4390/audio.mp3",
     request: { headers: { "x-waveform-failure": "network" } },
     waveform: { kind: "decode" },
   }),
@@ -322,7 +331,7 @@ button("Waveform network failure", () =>
 button("Waveform decode failure", () =>
   player.setSource({
     ...source,
-    url: "http://127.0.0.1:4390/audio.wav",
+    url: "http://127.0.0.1:4390/audio.mp3",
     request: { headers: { "x-waveform-failure": "decode" } },
     waveform: { kind: "decode" },
   }),
@@ -330,12 +339,12 @@ button("Waveform decode failure", () =>
 button("CORS failure", () =>
   player.setSource({
     ...source,
-    url: "http://127.0.0.1:4390/cors-denied.wav",
+    url: "http://127.0.0.1:4390/cors-denied.mp3",
     waveform: { kind: "decode" },
   }),
 );
 button("Slow source", () =>
-  player.setSource({ ...source, url: "http://127.0.0.1:4390/slow.wav" }),
+  player.setSource({ ...source, url: "http://127.0.0.1:4390/slow.mp3" }),
 );
 button("Bad media", () =>
   player.setSource({ ...source, url: "/fixtures/bad.wav" }),
@@ -352,7 +361,7 @@ button("Bad peaks", () =>
 button("Abort", () => {
   const abort = new AbortController();
   const promise = player.setSource(
-    { ...source, url: "/fixtures/tone.wav?abort" },
+    { ...source, url: `${source.url}?abort` },
     { signal: abort.signal },
   );
   abort.abort();
@@ -403,7 +412,11 @@ button("Invalid rules", () =>
   view?.update({ annotationRules: { minLength: 5, maxLength: 1 } }),
 );
 button("Out of bounds", () =>
-  store.addRegion({ id: "outside", start: 20, end: 22 }),
+  store.addRegion({
+    id: "outside",
+    start: peaks.duration + 1,
+    end: peaks.duration + 3,
+  }),
 );
 button("Replace data", () =>
   view?.update({ data: { ...data, channels: [data.channels[1]] } }),

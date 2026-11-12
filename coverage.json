@@ -19,6 +19,12 @@
     "browsers": ["chromium", "firefox", "webkit"]
   },
   "resultsReference": "VERIFICATION.md",
+  "audioFixture": {
+    "path": "packages/fixtures/bach_classical.mp3",
+    "suppliedPeaks": "packages/fixtures/bach-peaks.json",
+    "durationSeconds": 108,
+    "channels": 2
+  },
   "entries": [
     {
       "id": "complete-player",
@@ -458,6 +464,20 @@
       "manualInstructions": "Use the named scenario and its explicit action buttons; see README.md.",
       "expectedBehavior": "Line/bars, normalized amplitude, channels, JSON/CSS themes preserve playback",
       "status": "implemented"
+    },
+    {
+      "id": "react-region-themes",
+      "featureGroup": "Appearance",
+      "app": "react",
+      "scenario": "themes",
+      "scenarioPath": "apps/react/src/main.tsx",
+      "entryPoints": ["raavl/react", "raavl/themes", "raavl/styles.css"],
+      "ownership": "owned player and annotations",
+      "testPath": "tests/browser/core.spec.ts",
+      "testName": "react shows shipped annotation player styles and waveform presets",
+      "manualInstructions": "Compare Default, Paper and Neon with the badges, overlap picker, and inline or modal editor. Enable the extra playback controls to inspect both toolbars. See README.md.",
+      "expectedBehavior": "Presets change the waveform while sibling controls retain stock styles. Preset changes preserve draft edits.",
+      "status": "verified"
     },
     {
       "id": "viewport",

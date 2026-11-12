@@ -10,30 +10,26 @@ body {
 h1 {
   font-size: 32px;
 }
-button,
-select,
-input,
-textarea {
+:is(button, select, input, textarea):where(:not(.theme-preview *)) {
   font: inherit;
   margin: 5px;
   padding: 8px;
   border: 1px solid #809b90;
   border-radius: 6px;
 }
-button {
+button:where(:not(.theme-preview *)) {
   cursor: pointer;
   background: white;
   color: #193e35;
 }
-section {
+section:where(:not(.theme-preview *)) {
   background: white;
   border: 1px solid #ccd6cf;
   border-radius: 12px;
   padding: 20px;
   margin: 18px 0;
 }
-pre,
-output {
+:is(pre, output):where(:not(.theme-preview *)) {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -45,11 +41,11 @@ nav {
 a {
   color: #306953;
 }
-textarea {
+textarea:where(:not(.theme-preview *)) {
   width: 90%;
   height: 100px;
 }
-.raavl-toolbar {
+.raavl-toolbar:where(:not(.theme-preview *)) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;

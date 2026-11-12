@@ -9,13 +9,18 @@ import {
   undoHistory,
   redoHistory,
 } from "raavl/history";
-import { annotations } from "./fixture";
+import {
+  annotations,
+  audioUrl,
+  sourceId,
+} from "../../../packages/fixtures/data.js";
+const initialDocument: AnnotationDocument = annotations;
 export const initial = {
-  document: annotations,
+  document: initialDocument,
   revision: 0,
   selection: null as string | null,
   preferences: { theme: "sage" },
-  source: { id: "tone", url: "/fixtures/tone.wav" },
+  source: { id: sourceId, url: audioUrl },
   history: createHistory(annotations),
   rejected: 0,
 };
@@ -39,11 +44,12 @@ export function reduce(state: State, action: Action): State {
   }
   if (action.type === "select") return { ...state, selection: action.id };
   if (action.type === "source") {
-    const id = state.source.id === "tone" ? "alternate" : "tone";
+    const id =
+      state.source.id === sourceId ? `${sourceId}-alternate` : sourceId;
     const document = { ...annotations, sourceId: id };
     return {
       ...state,
-      source: { id, url: "/fixtures/tone.wav" },
+      source: { id, url: audioUrl },
       document,
       revision: state.revision + 1,
       history: createHistory(document),

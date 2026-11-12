@@ -16,8 +16,13 @@ const artifacts = resolve(".lab/runs", id, "artifacts"),
   archive = resolve(artifacts, (await readdir(artifacts))[0]);
 const results = [];
 for (const [i, version] of ["18.3.1", "19.3.1"].entries()) {
-  const dir = await mkdtemp(resolve(tmpdir(), "raavl-react-browser-"));
+  const workspace = await mkdtemp(resolve(tmpdir(), "raavl-react-browser-"));
+  const dir = resolve(workspace, "apps/react");
+  await cp("pnpm-workspace.yaml", resolve(workspace, "pnpm-workspace.yaml"));
   await cp("apps/react", dir, { recursive: true });
+  await cp("packages/fixtures", resolve(workspace, "packages/fixtures"), {
+    recursive: true,
+  });
   await generate(resolve(dir, "public/fixtures"));
   const manifest = JSON.parse(
     await readFile(resolve(dir, "package.template.json"), "utf8"),

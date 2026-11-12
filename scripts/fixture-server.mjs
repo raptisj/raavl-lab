@@ -1,15 +1,14 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { generate } from "../packages/fixtures/generate.mjs";
-await generate(".lab/http-fixtures");
-const audio = await readFile(".lab/http-fixtures/tone.wav");
+import { bachAudio } from "../packages/fixtures/generate.mjs";
+const audio = await readFile(bachAudio);
 const server = createServer((req, res) => {
   const url = new URL(req.url, "http://localhost");
   if (url.pathname === "/health") {
     res.end("ok");
     return;
   }
-  if (url.pathname !== "/cors-denied.wav")
+  if (url.pathname !== "/cors-denied.mp3")
     res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "x-waveform-failure");
   if (req.method === "OPTIONS") {
@@ -25,12 +24,12 @@ const server = createServer((req, res) => {
       return;
     }
     if (req.headers["x-waveform-failure"] === "decode") {
-      res.setHeader("Content-Type", "audio/wav");
+      res.setHeader("Content-Type", "audio/mpeg");
       res.end("deliberately invalid waveform bytes");
       return;
     }
     const range = /bytes=(\d+)-(\d*)/.exec(req.headers.range || "");
-    res.setHeader("Content-Type", "audio/wav");
+    res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Accept-Ranges", "bytes");
     if (range) {
       const start = Number(range[1]),
@@ -45,7 +44,7 @@ const server = createServer((req, res) => {
       res.end(audio);
     }
   };
-  const timer = setTimeout(send, url.pathname === "/slow.wav" ? 1200 : 0);
+  const timer = setTimeout(send, url.pathname === "/slow.mp3" ? 1200 : 0);
   res.on("close", () => clearTimeout(timer));
 });
 server.listen(4390, "127.0.0.1", () =>

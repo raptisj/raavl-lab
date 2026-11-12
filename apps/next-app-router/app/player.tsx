@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { AudioPlayer } from "raavl/react";
+import { audioUrl } from "../../../packages/fixtures/data.js";
 export default function Player({ name }: { name: string }) {
   const [identity, setIdentity] = useState("Loading package identity");
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function Player({ name }: { name: string }) {
         source={{
           kind: "url",
           id: name,
-          url: "/fixtures/tone.wav",
+          url: audioUrl,
           waveform: { kind: "none" },
         }}
         controls={{ playbackRate: true, loop: true }}

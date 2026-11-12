@@ -73,7 +73,9 @@ for (const [i, app] of ["vanilla-js", "vanilla-ts"].entries()) {
     await page
       .getByRole("button", { name: "Rapid replace", exact: true })
       .click();
-    await expect(page.locator("#state")).toContainText('"sourceId":"tone"');
+    await expect(page.locator("#state")).toContainText(
+      '"sourceId":"bach-classical"',
+    );
   });
 }
 test("react borrowed ownership and headless clock", async ({ page }) => {
@@ -166,7 +168,7 @@ test("vanilla-js waveform failures preserve playback and stale loads cannot win"
   await expect(page.locator("#state")).toContainText('"waveform":"ready"');
   expect(
     errors.filter(
-      (e) => !e.includes("cors-denied.wav due to access control checks"),
+      (e) => !e.includes("cors-denied.mp3 due to access control checks"),
     ),
   ).toEqual([]);
 });
@@ -208,6 +210,104 @@ for (const scenario of [
     await page.getByRole("button", { name: "Mount / unmount owner" }).click();
     expect(errors).toEqual([]);
   });
+test("react shows shipped annotation player styles and waveform presets", async ({
+  page,
+}) => {
+  await page.goto("http://127.0.0.1:4303/?scenario=themes");
+  const theme = page.getByRole("combobox", { name: "Waveform preset" });
+  const player = page.locator(".raavl-player");
+  const waveform = player.getByRole("group", { name: "Audio waveform" });
+  const playback = player.getByRole("group", { name: "Playback controls" });
+  const mute = playback.getByRole("button", { name: "Mute audio" });
+  const seek = playback.getByRole("slider", { name: "Seek audio" });
+  const introLabel = page.locator(
+    '.raavl-region[data-raavl-annotation="intro"] .raavl-region-label',
+  );
+  const introBadge = player.getByRole("button", { name: /^Intro ·/ });
+  const overlap = player.getByRole("button", { name: /2 overlapping regions/ });
+  await expect(introLabel).toBeVisible();
+  await expect(introBadge).toBeVisible();
+  await expect(overlap).toBeVisible();
+  await expect(
+    player.getByRole("button", { name: "Create region at playhead" }),
+  ).toBeVisible();
+  await page
+    .getByRole("checkbox", { name: "Show extra playback controls" })
+    .check();
+  await expect(mute).toBeEnabled();
+  const playerBackground = await player.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+  await expect(introBadge).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+
+  await theme.selectOption("paper");
+  await expect(player).toHaveCSS("background-color", playerBackground);
+  await expect(waveform).toHaveCSS("background-color", "rgb(250, 246, 236)");
+  await expect(introLabel).toHaveCSS("color", "rgb(81, 70, 57)");
+  await expect(introBadge).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(overlap).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(mute).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(seek).toHaveCSS("accent-color", "rgb(40, 93, 80)");
+  await overlap.click();
+  await expect(overlap).toHaveCSS("outline-color", "rgb(176, 76, 48)");
+  const pickerSearch = player.getByRole("searchbox", {
+    name: "Search annotations by label or time",
+  });
+  await expect(pickerSearch).toHaveCSS(
+    "background-color",
+    "rgb(255, 255, 255)",
+  );
+  await player.getByRole("button", { name: "Close annotation picker" }).click();
+
+  await introBadge.click();
+  const editor = player.getByRole("group", { name: "Edit Intro", exact: true });
+  const label = editor.getByRole("textbox", { name: "Label" });
+  const apply = editor.getByRole("button", { name: "Apply edit" });
+  await label.fill("Edited Intro");
+  await expect(label).toHaveCSS("background-color", "rgb(255, 255, 255)");
+
+  await theme.selectOption("neon");
+  await expect(player).toHaveCSS("background-color", playerBackground);
+  await expect(waveform).toHaveCSS("background-color", "rgb(25, 18, 37)");
+  await expect(introLabel).toHaveCSS("color", "rgb(241, 229, 255)");
+  await expect(seek).toHaveCSS("accent-color", "rgb(40, 93, 80)");
+  await expect(label).toHaveValue("Edited Intro");
+  await expect(label).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await apply.click();
+  const editedBadge = player.getByRole("button", { name: /^Edited Intro ·/ });
+  await expect(editedBadge).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+
+  await page
+    .getByRole("combobox", { name: "Editor layout" })
+    .selectOption("modal");
+  await editedBadge.click();
+  const dialog = player.getByRole("dialog", { name: "Edit Edited Intro" });
+  await expect(dialog).toHaveCSS("background-color", "rgb(243, 246, 242)");
+  await dialog.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(dialog).toBeHidden();
+
+  await theme.selectOption("default");
+  await expect(player).toHaveCSS("background-color", playerBackground);
+  await expect(introLabel).toHaveCSS("color", "rgb(73, 49, 101)");
+  await expect(editedBadge).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(mute).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await page
+    .getByRole("combobox", { name: "Editor layout" })
+    .selectOption("inline");
+  await player
+    .getByRole("button", { name: "Create region at playhead" })
+    .click();
+  const creation = player.getByRole("group", { name: "New region" });
+  await creation.getByRole("textbox", { name: "Label" }).fill("Added region");
+  await creation
+    .getByRole("button", { name: "Create region from selection" })
+    .click();
+  await expect(
+    player
+      .locator(".raavl-region-label")
+      .getByText("Added region", { exact: true }),
+  ).toBeVisible();
+});
 test("vanilla-js modules, keyboard, selection, themes and history", async ({
   page,
 }) => {
@@ -229,7 +329,7 @@ test("vanilla-js modules, keyboard, selection, themes and history", async ({
   if (!box) throw Error("No waveform surface");
   await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.7);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.7, {
+  await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.7, {
     steps: 5,
   });
   await page.mouse.up();
@@ -325,15 +425,15 @@ test("vanilla-js borrowed media ownership and file input", async ({ page }) => {
   ).toBe(false);
   await page.reload();
   const audio = await (
-    await page.request.get("http://127.0.0.1:4301/fixtures/tone.wav")
+    await page.request.get("http://127.0.0.1:4301/fixtures/bach_classical.mp3")
   ).body();
   await page.locator("input[type=file]").setInputFiles({
-    name: "fixture.wav",
-    mimeType: "audio/wav",
+    name: "bach_classical.mp3",
+    mimeType: "audio/mpeg",
     buffer: audio,
   });
   await expect(page.locator("#state")).toContainText(
-    '"sourceId":"fixture.wav"',
+    '"sourceId":"bach_classical.mp3"',
   );
   await expect(page.locator("#state")).toContainText('"waveform":"ready"');
 });
@@ -373,7 +473,7 @@ test("vanilla-js transport settings, range playback, rules and minimap", async (
   await page.getByRole("button", { name: "Seek half", exact: true }).click();
   await expect
     .poll(async () => Number(await page.locator("#clock").textContent()))
-    .toBeCloseTo(6, 0);
+    .toBeCloseTo((await state()).duration / 2, 0);
   await page.getByRole("button", { name: "Range 1–3", exact: true }).click();
   await expect(page.locator("#state")).toContainText('"playback":"playing"');
   expect((await state()).loop).toBe(false);

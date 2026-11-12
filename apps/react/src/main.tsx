@@ -17,14 +17,15 @@ import {
   usePlayerContext,
   Waveform,
 } from "raavl/react";
-import { createAnnotations } from "raavl/regions";
+import { createAnnotations, type AnnotationDocument } from "raavl/regions";
 import { mountTimeline } from "raavl/timeline";
 import { mountMinimap } from "raavl/minimap";
 import { createSnapper } from "raavl/snapping";
 import { waveformThemes } from "raavl/themes";
 import type { Player } from "raavl/core";
 import type { WaveformView } from "raavl/dom";
-import { source, annotations } from "./fixture";
+import { source, annotations } from "../../../packages/fixtures/data.js";
+import { editorAnnotations } from "./fixture";
 if (new URLSearchParams(location.search).get("scenario") !== "headless")
   void import("raavl/styles.css");
 import "./lab.css";
@@ -117,10 +118,74 @@ function Demo({ scenario }: { scenario: string }) {
       />
     );
   if (scenario === "controlled") return <Controlled />;
+  if (scenario === "themes") return <ThemePreview />;
   return <BorrowedDemo scenario={scenario} />;
 }
+function ThemePreview() {
+  const [theme, setTheme] = useState("default");
+  const [showTransport, setShowTransport] = useState(false);
+  const [editorLayout, setEditorLayout] = useState<"inline" | "modal">(
+    "inline",
+  );
+  const preset =
+    theme === "paper"
+      ? waveformThemes.paper
+      : theme === "neon"
+        ? waveformThemes.neon
+        : null;
+  return (
+    <>
+      <label htmlFor="player-theme">Waveform preset</label>
+      <select
+        id="player-theme"
+        value={theme}
+        onChange={(e) => setTheme(e.target.value)}
+      >
+        <option value="default">Default</option>
+        <option value="paper">Paper</option>
+        <option value="neon">Neon</option>
+      </select>
+      <label htmlFor="editor-layout">Editor layout</label>
+      <select
+        id="editor-layout"
+        value={editorLayout}
+        onChange={(e) =>
+          setEditorLayout(e.target.value === "modal" ? "modal" : "inline")
+        }
+      >
+        <option value="inline">Inline</option>
+        <option value="modal">Modal</option>
+      </select>
+      <label>
+        <input
+          type="checkbox"
+          checked={showTransport}
+          onChange={(e) => setShowTransport(e.target.checked)}
+        />
+        Show extra playback controls
+      </label>
+      <AudioPlayer
+        className="theme-preview"
+        source={source}
+        theme={preset}
+        controls={
+          showTransport ? { playbackRate: true, loop: true } : undefined
+        }
+        waveform={{
+          defaultAnnotations: editorAnnotations,
+          annotationEditor: editorLayout,
+          interaction: { drag: "select" },
+        }}
+      />
+    </>
+  );
+}
 function Controlled() {
-  const [state, setState] = useState({
+  const [state, setState] = useState<{
+    document: AnnotationDocument;
+    revision: number;
+    rejected: number;
+  }>({
     document: annotations,
     revision: 0,
     rejected: 0,
@@ -128,7 +193,7 @@ function Controlled() {
   const latest = useRef(state);
   latest.current = state;
   const commit = (
-    document: typeof annotations,
+    document: AnnotationDocument,
     change: { baseRevision: number },
   ) => {
     const current = latest.current;
@@ -270,6 +335,7 @@ function App() {
           "independent",
           "modules",
           "controlled",
+          "themes",
           "many",
         ].map((s) => (
           <a key={s} href={"?scenario=" + s}>
